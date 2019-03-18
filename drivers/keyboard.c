@@ -1,25 +1,8 @@
 #include "keyboard.h"
-#include "ports.h"
+#include "../cpu/ports.h"
 #include "../cpu/isr.h"
+#include "../libc/string.h"
 #include "screen.h"
-
-//callback of type *isr_t
-static void keyboard_callback(registers_t r){
-    unsigned char scancode = inb(0x60); //upon keyboard interrupt, read key from port
-    char sc_ascii[4]; //holds "0"-"256"
-    int_to_ascii(scancode, sc_ascii);
-    kprint("Keyboard scancode: ");
-    kprint("\n");
-    kprint(sc_ascii);
-    kprint(", ");
-    print_letter(scancode);
-    kprint("\n");
-}
-
-//keyboard is connected to IRQ1
-void init_keyboard(){
-    register_interrupt_handler(IRQ1, keyboard_callback);
-}
 
 void print_letter(unsigned char scancode) {
     switch (scancode) {
@@ -209,4 +192,23 @@ void print_letter(unsigned char scancode) {
             } else kprint("Unknown key up");
             break;
     }
+}
+
+//callback of type *isr_t
+static void keyboard_callback(registers_t r){
+    (void)r;
+    unsigned char scancode = inb(0x60); //upon keyboard interrupt, read key from port
+    char sc_ascii[4]; //holds "0"-"256"
+    int_to_ascii(scancode, sc_ascii);
+    kprint("Keyboard scancode: ");
+    kprint("\n");
+    kprint(sc_ascii);
+    kprint(", ");
+    print_letter(scancode);
+    kprint("\n");
+}
+
+//keyboard is connected to IRQ1
+void init_keyboard(){
+    register_interrupt_handler(IRQ1, keyboard_callback);
 }

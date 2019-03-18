@@ -1,12 +1,9 @@
-void memory_copy(char* source, char* dest, int nbytes){
-    int i;
-    for(i = 0; i < nbytes; ++i)
-        *(dest + i) = *(source + i);
-}
+int strlen(char* s){
 
-void memory_set(char* dest, char val, int len){
-    for ( ; len; --len) 
-        *(dest++) = val;    
+    int len = 0;
+    while(s[len] != '\0')
+        ++len;
+    return len;
 }
 
 char* reverse(char* str){
@@ -19,14 +16,6 @@ char* reverse(char* str){
     }
 
     return str;
-}
-
-int strlen(char* s){
-
-    int len = 0;
-    while(s[len] != '\0')
-        ++len;
-    return len;
 }
 
 void int_to_ascii(int n, char str[]){

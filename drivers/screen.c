@@ -1,6 +1,6 @@
 #include "screen.h"
-#include "ports.h"
-#include "../kernel/util.h"
+#include "../cpu/ports.h"
+#include "../libc/mem.h"
 
 int get_cursor_offset();
 void set_cursor_offset(int offset);
@@ -60,11 +60,11 @@ int print_char(char c, int col, int row, char attr){
     if(offset >= MAX_ROWS * MAX_COLS * 2){
         int i;
         for(i = 1; i < MAX_ROWS; ++i)
-            memory_copy(get_offset(0,i) + VIDEO_ADDRESS,
-                get_offset(0, i-1) + VIDEO_ADDRESS,
+            memory_copy((char*)get_offset(0,i) + VIDEO_ADDRESS,
+                (char*)get_offset(0, i-1) + VIDEO_ADDRESS,
                 MAX_COLS * 2);        
             
-        char* last_line = get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS;
+        char* last_line = (char*)get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS;
         for(i = 0; i < MAX_COLS * 2; ++i)
             last_line[i] = 0;
         
@@ -94,7 +94,7 @@ void set_cursor_offset(int offset){
 void clear_screen(){
     int screenSize = MAX_COLS*MAX_ROWS;
     int i;
-    char* screen = VIDEO_ADDRESS;
+    char* screen = (char*) VIDEO_ADDRESS;
 
     for(i = 0; i < screenSize; ++i){
         screen[2*i] = ' ';

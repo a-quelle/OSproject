@@ -1,12 +1,14 @@
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/screen.h"
-#include "../drivers/ports.h"
-#include "../kernel/util.h"
+#include "timer.h"
+#include "../drivers/keyboard.h"
+#include "../libc/string.h"
+#include "ports.h"
 
 isr_t interrupt_handlers[256];
 
-void register_interrupt_handler(char n, isr_t handler){
+void register_interrupt_handler(unsigned char n, isr_t handler){
     interrupt_handlers[n] = handler;
 }
 
@@ -75,6 +77,12 @@ void isr_install(){
     set_idt_gate(47, (int)irq15);
 
     set_idt();
+}
+
+void irq_install(){
+    __asm__ __volatile__ ("sti"); //interrupts were disabled in switch_pm, reenable them
+    init_timer(50);     //timer connected to IRQ0
+    init_keyboard();    //keyboard connected to IEQ1
 }
 
 char* exception_messages[] = {
