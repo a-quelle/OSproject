@@ -18,7 +18,7 @@ char* reverse(char* str){
     return str;
 }
 
-void int_to_ascii(int n, char str[]){
+void int_to_ascii(int n, char* str){
     int i, sign;
     if((sign = n) < 0)
         n = -n;
@@ -30,4 +30,23 @@ void int_to_ascii(int n, char str[]){
         str[i++] = '-';
     str[i] = '\0';
     reverse(str);
+}
+
+void append(char* s, char n){
+    int len = strlen(s);
+    s[len] = n;
+    s[len+1] = '\0';
+}
+
+void backspace(char* s){
+    int len = strlen(s);
+    if(len)
+        s[len-1] = '\0';
+}
+//returns -1 if s1<s2, 1 if s2>s1, 0 otherwise
+int strcmp(char* s1, char* s2){
+    int i;
+    for(i = 0; s1[i] == s2[i]; ++i)
+        if(s1[i] == '\0') return 0;
+    return s1[i]-s2[i];
 }
