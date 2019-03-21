@@ -8,14 +8,14 @@ int tick = 0;
 
 //timer_callback is of type *isr_t
 //
-static void timer_callback(registers_t r){
+static void timer_handler(registers_t* r){
     ++tick;
     (void)r;
 }
 
 void init_timer(int freq){
     //PIT0 couples to IRQ0
-    register_interrupt_handler(IRQ0, timer_callback);
+    register_interrupt_handler(IRQ0, timer_handler);
 
     int divisor = 1193180 / freq;
     char low = (char)(divisor & 0xff);

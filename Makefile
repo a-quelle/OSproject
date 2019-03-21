@@ -4,8 +4,8 @@ OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o}
 
 CC = /usr/local/i386elfgcc/bin/i386-elf-gcc
 # -g: Use debugging symbols in gcc
-CFLAGS = -g -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs\
-			-Wall -Wextra -Werror -ffreestanding
+CFLAGS = -g -m32 -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs\
+			 -ffreestanding -Wall -Wextra -Werror
 
 GDB = /usr/local/i386elfgcc/bin/i386-elf-gdb
 
@@ -21,10 +21,10 @@ kernel.elf: boot/kernel_entry.o ${OBJ}
 	i386-elf-ld -o $@ -Ttext 0x1000 $^ 
 
 run: os-image.bin
-	qemu-system-i386 -fda $<
+	qemu-system-i386 -drive file=$<,format=raw,index=0,if=floppy
 
 debug: os-image.bin kernel.elf
-	qemu-system-i386 -s -S -fda os-image.bin &
+	qemu-system-i386 -s -S -drive file=$<,format=raw,index=0,if=floppy &
 	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c ${HEADERS}

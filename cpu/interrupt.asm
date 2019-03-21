@@ -2,7 +2,7 @@
 [extern irq_handler]
 
 isr_common_stub:
-    pusha   ;pushes adi, esi, ebp, esp, ebx, edx, ecx, eax. Accessible by isr_handler as arg
+    pusha   ;pushes adi, esi, ebp, esp, ebx, edx, ecx, eax, completes registers_t
     mov ax, ds
     push eax
     mov ax, 0x10    ;offset of data segment in gdt
@@ -10,9 +10,12 @@ isr_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    push esp ; registers_t*. Do not pass by value since c compiler can edit args and corrupt stack.
+    cld ; cdecl requires resetting direction flag (used for movs, stos, scas and possible others)
 
     call isr_handler
 
+    pop eax ; clean registers_t* from stack
     pop eax
     mov ds, ax
     mov es, ax
@@ -20,10 +23,9 @@ isr_common_stub:
     mov fs, ax
     popa
     add esp, 8 ;clean up stack of isrX
-    sti ;respond to new interrupts after next instruction
-    iret ;pop cs, eip, eflags, ss and esp pushed at interrupt
+    iret ;pop cs, eip, eflags, ss and esp pushed at interrupt, eflags contains interrupt flag
 
-irq_common_stub: ;same as irs_common_stub except call irq_handler, and use ebx after call
+irq_common_stub: ;same as irs_common_stub except call irq_handler and pop ebx after call
     pusha
     mov ax, ds
     push eax
@@ -32,9 +34,12 @@ irq_common_stub: ;same as irs_common_stub except call irq_handler, and use ebx a
     mov es, ax
     mov fs, ax
     mov gs, ax
+    push esp;
+    cld
 
     call irq_handler
 
+    pop ebx
     pop ebx
     mov ds, bx
     mov es, bx
@@ -42,7 +47,6 @@ irq_common_stub: ;same as irs_common_stub except call irq_handler, and use ebx a
     mov gs, bx
     popa
     add esp, 8
-    sti
     iret
 
 ;explicitly declare global variables for linker
@@ -96,290 +100,242 @@ global irq13
 global irq14
 global irq15
 
-isr0:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 0
+isr0:   ;interrupts now disabled using always0 from idt_gate_t
+    push 0 ;push 32bit, since in 32-bit mode
+    push 0
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr1:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 1
+    push 0
+    push 1
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr2:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 2
+    push 0
+    push 2
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr3:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 3
+    push 0
+    push 3
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr4:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 4
+    push 0
+    push 4
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr5:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 5
+    push 0
+    push 5
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr6:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 6
+    push 0
+    push 6
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr7:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 7
+    push 0
+    push 7
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr8:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 8
+    push 8
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr9:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 9
+    push 0
+    push 9
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr10:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 10
+    push 10
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr11:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 11
+    push 11
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr12:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 12
+    push 12
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr13:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 13
+    push 13
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr14:
-    cli ;ignore further interrupts until sti in isr_common_stub
     ;error code pushed for this interrupt
-    push byte 14
+    push 14
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr15:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 15
+    push 0
+    push 15
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr16:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 16
+    push 0
+    push 16
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr17:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 17
+    ;error code pushed for this interrupt
+    push 17
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr18:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 18
+    push 0
+    push 18
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr19:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 19
+    push 0
+    push 19
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr20:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 20
+    push 0
+    push 20
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr21:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 21
+    push 0
+    push 21
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr22:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 22
+    push 0
+    push 22
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr23:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 23
+    push 0
+    push 23
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr24:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 24
+    push 0
+    push 24
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr25:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 25
+    push 0
+    push 25
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr26:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 26
+    push 0
+    push 26
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr27:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 27
+    push 0
+    push 27
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr28:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 28
+    push 0
+    push 28
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr29:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 29
+    push 0
+    push 29
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr30:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 30
+    ;error code pushed for this interrupt
+    push 30
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 isr31:
-    cli ;ignore further interrupts until sti in isr_common_stub
-    push byte 0
-    push byte 31
+    push 0
+    push 31
     jmp isr_common_stub ;do not use call, it modifies the stack, which would change registers_t
 
 irq0:
-	cli
-	push byte 0
-	push byte 32
+	push 0
+	push 32
 	jmp irq_common_stub
 
 irq1:
-	cli
-	push byte 1
-	push byte 33
+	push 1
+	push 33
 	jmp irq_common_stub
 
 irq2:
-	cli
-	push byte 2
-	push byte 34
+	push 2
+	push 34
 	jmp irq_common_stub
 
 irq3:
-	cli
-	push byte 3
-	push byte 35
+	push 3
+	push 35
 	jmp irq_common_stub
 
 irq4:
-	cli
-	push byte 4
-	push byte 36
+	push 4
+	push 36
 	jmp irq_common_stub
 
 irq5:
-	cli
-	push byte 5
-	push byte 37
+	push 5
+	push 37
 	jmp irq_common_stub
 
 irq6:
-	cli
-	push byte 6
-	push byte 38
+	push 6
+	push 38
 	jmp irq_common_stub
 
 irq7:
-	cli
-	push byte 7
-	push byte 39
+	push 7
+	push 39
 	jmp irq_common_stub
 
 irq8:
-	cli
-	push byte 8
-	push byte 40
+	push 8
+	push 40
 	jmp irq_common_stub
 
 irq9:
-	cli
-	push byte 9
-	push byte 41
+	push 9
+	push 41
 	jmp irq_common_stub
 
 irq10:
-	cli
-	push byte 10
-	push byte 42
+	push 10
+	push 42
 	jmp irq_common_stub
 
 irq11:
-	cli
-	push byte 11
-	push byte 43
+	push 11
+	push 43
 	jmp irq_common_stub
 
 irq12:
-	cli
-	push byte 12
-	push byte 44
+	push 12
+	push 44
 	jmp irq_common_stub
 
 irq13:
-	cli
-	push byte 13
-	push byte 45
+	push 13
+	push 45
 	jmp irq_common_stub
 
 irq14:
-	cli
-	push byte 14
-	push byte 46
+	push 14
+	push 46
 	jmp irq_common_stub
 
 irq15:
-	cli
-	push byte 15
-	push byte 47
+	push 15
+	push 47
 	jmp irq_common_stub

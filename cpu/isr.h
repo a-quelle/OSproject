@@ -70,17 +70,17 @@ extern void irq15();
 #define IRQ15 47
 
 
-//in cdecl arguments are looked for on stack in opposite order
+//in cdecl, arguments are looked for on stack in opposite order
 typedef struct{
     int ds; //push eax in isr_common_stub 
-    int edi, esi, ebp, esp, ebx, edx, ecx, eax; //pusha in isr_common_stub
+    int edi, esi, ebp, useless_esp, ebx, edx, ecx, eax; //pusha in isr_common_stub
     int int_no, err_code; //interrupt no and error code pushed in isrX
-    int eip, cs, eflags, user_esp, ss; //pushed by processor automatically at interrupt
+    int eip, cs, eflags, esp, ss; //pushed by processor automatically at interrupt
 } registers_t;
 
 void isr_install();
 void irq_install();
 
-typedef void (*isr_t)(registers_t);
+typedef void (*isr_t)(registers_t*);
 void register_interrupt_handler(unsigned char n, isr_t handler);
 #endif

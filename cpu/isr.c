@@ -1,6 +1,7 @@
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/screen.h"
+#include "paging.h"
 #include "timer.h"
 #include "../drivers/keyboard.h"
 #include "../libc/string.h"
@@ -80,9 +81,10 @@ void isr_install(){
 }
 
 void irq_install(){
-    __asm__ __volatile__ ("sti"); //interrupts were disabled in switch_pm, reenable them
+    asm volatile ("sti"); //interrupts were disabled in switch_pm, reenable them
     init_timer(50);     //timer connected to IRQ0
-    init_keyboard();    //keyboard connected to IEQ1
+    init_keyboard();    //keyboard connected to IRQ1
+    initialise_paging();//paging connected to IRQ14
 }
 
 char* exception_messages[] = {
@@ -124,24 +126,27 @@ char* exception_messages[] = {
 };
 
 //for OS generated interrupts, only print for now
-void isr_handler(registers_t r){
-    kprint("Received Interrupt: ");
+void isr_handler(registers_t* r){
+    if(interrupt_handlers[r->int_no]){
+        interrupt_handlers[r->int_no](r);
+    }
+    kprint("Received Unhandled Interrupt: ");
     char s[3];
-    int_to_ascii(r.int_no, s);
+    int_to_ascii(r->int_no, s);
     kprint(s);
     kprint("\n");
-    kprint(exception_messages[r.int_no]);
+    kprint(exception_messages[r->int_no]);
     kprint("\n");
 }
 
 //For interrupts from PIC, send EOI and call specific handler
-void irq_handler(registers_t r){
+void irq_handler(registers_t* r){
     //send EOI to the PICs so they will send new interrupts
-    if(r.int_no >= 40) 
-        outb(0xa0, 0x20); //interrupt slave only if used
+    if(r->int_no >= 40) 
+        outb(0xa0, 0x20); //do for slave PIC only if used
     outb(0x20, 0x20);
 
-    if(interrupt_handlers[r.int_no]){
-        interrupt_handlers[r.int_no](r);
+    if(interrupt_handlers[r->int_no]){
+        interrupt_handlers[r->int_no](r);
     }
 }

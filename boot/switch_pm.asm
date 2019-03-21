@@ -1,6 +1,6 @@
 [bits 16]
 switch_to_pm:
-	cli							;disable interrupts	
+	cli							;disable interrupts	for switch
 	lgdt [gdt_descriptor]		;load the gdt descriptor
 	mov eax, cr0
 	or eax, 0x1					;set the 32-bit mode
@@ -16,7 +16,7 @@ init_pm:						;org added to calculated address
 	mov fs, ax
 	mov gs, ax
 
-	mov ebp, 0x90000
+	mov ebp, 0x7000
 	mov esp, ebp
 
 	call BEGIN_PM

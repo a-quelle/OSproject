@@ -2,7 +2,7 @@
 KERNEL_OFFSET equ 0x1000 ;Put Kernel here in memory, link kernel with this offset too
 
 mov [BOOT_DRIVE], dl    ;Save boot disk id to be sure
-mov bp, 0x9000
+mov bp, 0x7000
 mov sp, bp
 
 mov bx, MSG_REAL_MODE
@@ -26,7 +26,7 @@ load_kernel:
     call print
     call print_nl
 
-    ;read two sectors of disk from BOOT_DRIVE into KERNEL_OFFSET
+    ;read 32 sectors of disk from BOOT_DRIVE into KERNEL_OFFSET
     mov bx, KERNEL_OFFSET
     mov dh, 32
     mov dl, [BOOT_DRIVE]

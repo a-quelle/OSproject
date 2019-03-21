@@ -18,6 +18,12 @@ char* reverse(char* str){
     return str;
 }
 
+void append(char* s, char n){
+    int len = strlen(s);
+    s[len] = n;
+    s[len+1] = '\0';
+}
+
 void int_to_ascii(int n, char* str){
     int i, sign;
     if((sign = n) < 0)
@@ -32,10 +38,21 @@ void int_to_ascii(int n, char* str){
     reverse(str);
 }
 
-void append(char* s, char n){
-    int len = strlen(s);
-    s[len] = n;
-    s[len+1] = '\0';
+void hex_to_ascii(int n, char* str){
+    append(str, '0');
+    append(str, 'x');
+    int zeroes = 0;
+    int i;
+    for(i = 28; i>0; i-=4){
+        int tmp = (n >> i) & 0xF;
+        if(!tmp && !zeroes) continue;
+        zeroes = 1;
+        if(tmp >= 0xA) append(str, tmp - 0xA + 'a');
+        else append(str, tmp + '0');
+    }
+    int tmp = n & 0xF;
+    if(tmp >= 0xA) append(str, tmp - 0xA + 'a');
+    else append(str, tmp + '0');
 }
 
 void backspace(char* s){

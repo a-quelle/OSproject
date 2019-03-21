@@ -25,7 +25,7 @@ const char sc_ascii[] = { '?', '?', '1', '2', '3', '4', '5', '6',
 'B', 'N', 'M', ',', '.', '/', '?', '?', '?', ' '};
 
 //callback of type *isr_t
-static void keyboard_callback(registers_t r){
+static void keyboard_handler(registers_t* r){
     (void)r;
     unsigned char scancode = inb(0x60); //upon keyboard interrupt, read key from port
     
@@ -47,5 +47,5 @@ static void keyboard_callback(registers_t r){
 
 //keyboard is connected to IRQ1
 void init_keyboard(){
-    register_interrupt_handler(IRQ1, keyboard_callback);
+    register_interrupt_handler(IRQ1, keyboard_handler);
 }
