@@ -21,7 +21,7 @@ page_t* get_page(uint32_t address, int make, page_directory_t* dir){
         uint32_t phys_addr = NULL;
         dir->tables[table_index] = (page_table_t*) kmalloc(sizeof(page_table_t), PAGE, &phys_addr);
         memory_set((uint8_t*)(dir->tables[table_index]), 0, 0x1000);
-        dir->tablesPhysical[table_index] = phys_addr | 0x7; //present, writable, user
+        dir->tablesPhysical[table_index] = phys_addr | 0x7; //present, writable, user (see page_t)
         return &dir->tables[table_index]->pages[page_index];
     }
     return 0;
